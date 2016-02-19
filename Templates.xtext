@@ -8,7 +8,6 @@ generate templates "http://www.migueljimenez.co/xtext/templates/Templates"
  * This grammar has been extracted from Eclipse BeeLang's grammar
  * http://git.eclipse.org/c/b3/b3.git/tree/org.eclipse.b3.beelang/src/org/eclipse/b3/BeeLang.xtext
  */
-
 Model
 	:	templates+=Template*
 	;
@@ -47,10 +46,10 @@ TextEndLiteral
 	;
 
 // Using «» and «{}» (e.g., «This is text «{"Java".length + 5}»»)
-terminal TEXT :      '«'     ( (("}" !'»')  | ("«" !'{')) | !('}'|"«"| "»"))* '»';
-terminal TEXTSTART : '«'     ( (("}" !'»')  | ("«" !'{')) | !('}'|"«"| "»"))* '«' '{';
-terminal TEXTEND :   '}' '»' ( (("}" !'»')  | ("«" !'{')) | !('}'|"«"| "»"))* '»';
-terminal TEXTMID :   '}' '»' ( (("}" !'»')  | ("«" !'{')) | !('}'|"«"| "»"))* '«' '{';
+//terminal TEXT :      '«'     ( (("}" !'»')  | ("«" !'{')) | !('}'|"«"| "»"))* '»';
+//terminal TEXTSTART : '«'     ( (("}" !'»')  | ("«" !'{')) | !('}'|"«"| "»"))* '«' '{';
+//terminal TEXTEND :   '}' '»' ( (("}" !'»')  | ("«" !'{')) | !('}'|"«"| "»"))* '»';
+//terminal TEXTMID :   '}' '»' ( (("}" !'»')  | ("«" !'{')) | !('}'|"«"| "»"))* '«' '{';
 
 // Using [ ]  and <% %> (e.g., [This is text <% "Java".length + 5 %>])
 //terminal TEXT :      '['     ( (("%" !'>') | ("<" !'%')) | !('%' | "<" | "]" ))*     ']';
@@ -63,3 +62,12 @@ terminal TEXTMID :   '}' '»' ( (("}" !'»')  | ("«" !'{')) | !('}'|"«"| "»")
 //terminal TEXTSTART : '«' !('»'|'‹')* '‹';
 //terminal TEXTMID : '›' !('»'|'‹')* '‹';
 //terminal TEXTEND : '›' !('»'|'‹')* '»';
+
+// Using '' and {} (e.g.,'This is text {"Java".length + 5}')
+// Includes escaping special characters: \, ', {, }
+// Note: to use these templates, strings need to be limited to double quotes "like this"
+terminal TEXT:      "'" ('\\' . | !('\\' | "'" | '{' | '}') )* "'";
+terminal TEXTSTART: "'" ('\\' . | !('\\' | "'" | '{') )* '{';
+terminal TEXTMID:   '}' ('\\' . | !('\\' | "'" | '{') )* '{';
+terminal TEXTEND:   '}' ('\\' . | !('\\' | "'" | '{') )* "'";
+terminal STRING: '"' ( '\\' . /* ('b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\') */ | !('\\'|'"') )* '"'?;
