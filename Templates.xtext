@@ -1,0 +1,65 @@
+grammar co.migueljimenez.xtext.templates.Templates with org.eclipse.xtext.xbase.Xbase
+
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
+
+generate templates "http://www.migueljimenez.co/xtext/templates/Templates"
+
+/*
+ * This grammar has been extracted from Eclipse BeeLang's grammar
+ * http://git.eclipse.org/c/b3/b3.git/tree/org.eclipse.b3.beelang/src/org/eclipse/b3/BeeLang.xtext
+ */
+
+Model
+	:	templates+=Template*
+	;
+
+TextVerbatimValue returns ecore::EString
+	:	TEXT
+	;
+
+Template
+	:	{Template} (expressions+=TextLiteral)
+	| 	(
+			expressions+=TextStartLiteral 
+			(expressions+=TemplateExpression (expressions+=TextMidLiteral expressions+=TemplateExpression)*)
+			expressions+=TextEndLiteral
+		)
+	;
+	
+TemplateExpression
+	:	{TemplateExpression} (echoExpression=XExpression)? (',' expression=XExpression)?
+	;
+	
+TextLiteral
+	:	{TextLiteral} value=TextVerbatimValue
+	;
+
+TextStartLiteral
+	:	{TextStartLiteral} value=TEXTSTART
+	;
+	
+TextMidLiteral
+	:	{TextMidLiteral} value=TEXTMID
+	;
+	
+TextEndLiteral
+	:	{TextEndLiteral} value=TEXTEND
+	;
+
+// Using «» and «{}» (e.g., «This is text «{"Java".length + 5}»»)
+terminal TEXT :      '«'     ( (("}" !'»')  | ("«" !'{')) | !('}'|"«"| "»"))* '»';
+terminal TEXTSTART : '«'     ( (("}" !'»')  | ("«" !'{')) | !('}'|"«"| "»"))* '«' '{';
+terminal TEXTEND :   '}' '»' ( (("}" !'»')  | ("«" !'{')) | !('}'|"«"| "»"))* '»';
+terminal TEXTMID :   '}' '»' ( (("}" !'»')  | ("«" !'{')) | !('}'|"«"| "»"))* '«' '{';
+
+// Using [ ]  and <% %> (e.g., [This is text <% "Java".length + 5 %>])
+//terminal TEXT :      '['     ( (("%" !'>') | ("<" !'%')) | !('%' | "<" | "]" ))*     ']';
+//terminal TEXTSTART : '['     ( (("%" !'>') | ("<" !'%')) | !('%' | "<" | "]" ))*     '<' '%';
+//terminal TEXTEND :   '%' '>' ( (("%" !'>') | ("<" !'%')) | !('%' | "<" | "]" ))*     ']';
+//terminal TEXTMID :   '%' '>' ( (("%" !'>') | ("<" !'%')) | !('%' | "<" | "]" ))*     '<' '%';
+
+// Using «» and ‹› (e.g., «This is text ‹"Java".length + 5›»)
+//terminal TEXT : '«' !('»'|'‹'|'›')* '»';
+//terminal TEXTSTART : '«' !('»'|'‹')* '‹';
+//terminal TEXTMID : '›' !('»'|'‹')* '‹';
+//terminal TEXTEND : '›' !('»'|'‹')* '»';
